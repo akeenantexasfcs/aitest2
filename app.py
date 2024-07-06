@@ -9,6 +9,7 @@ import pandas as pd
 from openai import OpenAI
 import time
 import random
+from openai import RateLimitError  # Add this import
 
 # Set up the OpenAI client
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -34,14 +35,13 @@ def generate_response(prompt, max_retries=5):
                 max_tokens=150
             )
             return response.choices[0].message.content.strip()
+        except RateLimitError:  # Use RateLimitError directly
+            wait_time = (2 ** attempt) + random.random()
+            st.warning(f"Rate limit exceeded. Retrying in {wait_time:.2f} seconds...")
+            time.sleep(wait_time)
         except Exception as e:
-            if isinstance(e, openai.RateLimitError):
-                wait_time = (2 ** attempt) + random.random()
-                st.warning(f"Rate limit exceeded. Retrying in {wait_time:.2f} seconds...")
-                time.sleep(wait_time)
-            else:
-                st.error(f"An error occurred: {str(e)}")
-                return "I'm sorry, but I encountered an error while processing your request."
+            st.error(f"An error occurred: {str(e)}")
+            return "I'm sorry, but I encountered an error while processing your request."
     
     return "I'm sorry, but I was unable to generate a response after multiple attempts."
 
