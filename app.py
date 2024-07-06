@@ -54,7 +54,7 @@ df, label_counts = process_file(uploaded_file)
 
 # Chat Interface
 if df is not None:
-    user_input = st.text_input("Ask a question about your data")
+    user_input = st.text_area("Ask a question about your data")
     if st.button("Submit"):
         if user_input:
             with st.spinner('Generating response...'):
