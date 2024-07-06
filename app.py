@@ -10,7 +10,7 @@ import openai
 
 # Function to initialize OpenAI API key
 def init_openai():
-    openai.api_key = "your-api-key-here"
+    openai.api_key = "sk-proj-bvQPXeZci5ho6xHm13HaT3BlbkFJB9wxNeE3Sqxj0XmLHtOB"
 
 # Function to process the uploaded file and display the data
 def process_file(uploaded_file):
