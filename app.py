@@ -22,7 +22,7 @@ def process_file(uploaded_file):
 # Function to generate a response from OpenAI
 def generate_response(prompt):
     response = client.chat.completions.create(
-        model="gpt-4",  # Make sure you have access to GPT-4
+        model="gpt-3.5-turbo",  # Make sure you have access to GPT-4
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
