@@ -4,39 +4,43 @@
 # In[ ]:
 
 
-import openai
 import streamlit as st
+import pandas as pd
+import openai
 
-st.title("ChatGPT-like clone")
-
-# Set the API key
+# Set the API key from Streamlit secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "text-davinci-003"  # Model compatible with v0.28
+# Function to process the uploaded file and display the data
+def process_file(uploaded_file):
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.write(df)
+        return df
+    return None
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Function to generate a response from OpenAI
+def generate_response(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=150
+    )
+    return response.choices[0].text.strip()
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# Streamlit App
+st.title("Data Analysis Chat Interface")
 
-if prompt := st.chat_input("What is up?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+# File Upload
+uploaded_file = st.file_uploader("Upload your data file", type=["csv"])
+df = process_file(uploaded_file)
 
-    with st.chat_message("assistant"):
-        response = openai.Completion.create(
-            engine=st.session_state["openai_model"],
-            prompt="\n".join([m["content"] for m in st.session_state.messages]),
-            max_tokens=150,
-            n=1,
-            stop=None,
-            temperature=0.9,
-        )
-        assistant_message = response.choices[0].text.strip()
-        st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-        st.markdown(assistant_message)
+# Chat Interface
+if df is not None:
+    user_input = st.text_input("Ask a question about your data")
+    if st.button("Submit"):
+        if user_input:
+            with st.spinner('Generating response...'):
+                response = generate_response(user_input)
+                st.write(response)
 
