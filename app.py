@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[12]:
+# In[ ]:
 
 
 import openai
@@ -38,10 +38,4 @@ if prompt := st.chat_input("What is up?"):
         assistant_message = response['choices'][0]['message']['content']
         st.session_state.messages.append({"role": "assistant", "content": assistant_message})
         st.markdown(assistant_message)
-
-
-# In[ ]:
-
-
-
 
