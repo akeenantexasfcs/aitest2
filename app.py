@@ -7,6 +7,8 @@
 import streamlit as st
 import pandas as pd
 from openai import OpenAI
+import time
+import random
 
 # Set up the OpenAI client
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -19,17 +21,29 @@ def process_file(uploaded_file):
         return df
     return None
 
-# Function to generate a response from OpenAI
-def generate_response(prompt):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # Make sure you have access to GPT-4
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=150
-    )
-    return response.choices[0].message.content.strip()
+# Function to generate a response from OpenAI with retry mechanism
+def generate_response(prompt, max_retries=5):
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=150
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            if isinstance(e, openai.RateLimitError):
+                wait_time = (2 ** attempt) + random.random()
+                st.warning(f"Rate limit exceeded. Retrying in {wait_time:.2f} seconds...")
+                time.sleep(wait_time)
+            else:
+                st.error(f"An error occurred: {str(e)}")
+                return "I'm sorry, but I encountered an error while processing your request."
+    
+    return "I'm sorry, but I was unable to generate a response after multiple attempts."
 
 # Streamlit App
 st.title("Data Analysis Chat Interface")
