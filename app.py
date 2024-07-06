@@ -21,12 +21,15 @@ def process_file(uploaded_file):
 
 # Function to generate a response from OpenAI
 def generate_response(prompt):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
+    response = openai.ChatCompletion.create(
+        model="gpt-4",  # Use the appropriate model
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=150
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message['content'].strip()
 
 # Streamlit App
 st.title("Data Analysis Chat Interface")
