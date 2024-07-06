@@ -4,6 +4,12 @@
 # In[12]:
 
 
+import subprocess
+import sys
+
+# Upgrade openai library
+subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "openai"])
+
 import openai
 import streamlit as st
 
