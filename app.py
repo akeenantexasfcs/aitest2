@@ -35,8 +35,8 @@ if prompt := st.chat_input("What is up?"):
                 for m in st.session_state.messages
             ]
         )
-        st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message["content"]})
-        st.markdown(response.choices[0].message["content"])
+        st.session_state.messages.append({"role": "assistant", "content": response['choices'][0]['message']['content']})
+        st.markdown(response['choices'][0]['message']['content'])
 
 
 # In[ ]:
