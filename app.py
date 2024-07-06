@@ -25,13 +25,15 @@ def process_file(uploaded_file):
 def generate_response(prompt, max_retries=5):
     for attempt in range(max_retries):
         try:
-            response = client.completions.create(
+            response = client.messages.create(
                 model="claude-3-sonnet-20240229",
-                prompt=f"Human: {prompt}\n\nAssistant:",
-                max_tokens_to_sample=150,
+                max_tokens=150,
                 temperature=0.7,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
             )
-            return response.completion.strip()
+            return response.content[0].text
         except anthropic.RateLimitError:
             wait_time = (2 ** attempt) + random.random()
             st.warning(f"Rate limit exceeded. Retrying in {wait_time:.2f} seconds...")
