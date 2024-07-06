@@ -6,13 +6,12 @@
 
 import streamlit as st
 import pandas as pd
-from openai import OpenAI
+import anthropic
 import time
 import random
-from openai import RateLimitError  # Add this import
 
-# Set up the OpenAI client
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# Set up the Anthropic client
+client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
 
 # Function to process the uploaded file and display the data
 def process_file(uploaded_file):
@@ -22,20 +21,18 @@ def process_file(uploaded_file):
         return df
     return None
 
-# Function to generate a response from OpenAI with retry mechanism
+# Function to generate a response from Claude with retry mechanism
 def generate_response(prompt, max_retries=5):
     for attempt in range(max_retries):
         try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=150
+            response = client.completions.create(
+                model="claude-3-sonnet-20240229",
+                prompt=f"Human: {prompt}\n\nAssistant:",
+                max_tokens_to_sample=150,
+                temperature=0.7,
             )
-            return response.choices[0].message.content.strip()
-        except RateLimitError:  # Use RateLimitError directly
+            return response.completion.strip()
+        except anthropic.RateLimitError:
             wait_time = (2 ** attempt) + random.random()
             st.warning(f"Rate limit exceeded. Retrying in {wait_time:.2f} seconds...")
             time.sleep(wait_time)
