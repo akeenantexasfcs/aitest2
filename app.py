@@ -18,8 +18,9 @@ def process_file(uploaded_file):
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         st.write(df)
-        return df
-    return None
+        label_counts = df['Label'].value_counts().to_string()
+        return df, label_counts
+    return None, None
 
 # Function to generate a response from Claude with retry mechanism
 def generate_response(prompt, max_retries=5):
@@ -27,7 +28,7 @@ def generate_response(prompt, max_retries=5):
         try:
             response = client.messages.create(
                 model="claude-3-sonnet-20240229",
-                max_tokens=150,
+                max_tokens=1000,
                 temperature=0.7,
                 messages=[
                     {"role": "user", "content": prompt}
@@ -49,7 +50,7 @@ st.title("Data Analysis Chat Interface")
 
 # File Upload
 uploaded_file = st.file_uploader("Upload your data file", type=["csv"])
-df = process_file(uploaded_file)
+df, label_counts = process_file(uploaded_file)
 
 # Chat Interface
 if df is not None:
@@ -57,6 +58,8 @@ if df is not None:
     if st.button("Submit"):
         if user_input:
             with st.spinner('Generating response...'):
-                response = generate_response(user_input)
+                # Include the label counts in the prompt
+                full_prompt = f"Here are the counts of records by Label:\n{label_counts}\n\nUser question: {user_input}"
+                response = generate_response(full_prompt)
                 st.write(response)
 
