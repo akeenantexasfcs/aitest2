@@ -6,10 +6,10 @@
 
 import streamlit as st
 import pandas as pd
-import openai
+from openai import OpenAI
 
-# Set the API key from Streamlit secrets
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Set up the OpenAI client
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # Function to process the uploaded file and display the data
 def process_file(uploaded_file):
@@ -21,15 +21,15 @@ def process_file(uploaded_file):
 
 # Function to generate a response from OpenAI
 def generate_response(prompt):
-    response = openai.Completion.create(
-        model="gpt-4",  # Use the appropriate model, or "text-davinci-003" for Davinci model
+    response = client.chat.completions.create(
+        model="gpt-4",  # Make sure you have access to GPT-4
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=150
     )
-    return response.choices[0].message['content'].strip()
+    return response.choices[0].message.content.strip()
 
 # Streamlit App
 st.title("Data Analysis Chat Interface")
