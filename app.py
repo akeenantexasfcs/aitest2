@@ -1,56 +1,46 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[12]:
+
+
+import openai
+import streamlit as st
+
+st.title("ChatGPT-like clone")
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("What is up?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        stream = client.chat.completions.create(
+            model=st.session_state["openai_model"],
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+            stream=True,
+        )
+        response = st.write_stream(stream)
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+
 # In[ ]:
 
 
-import streamlit as st
-import pandas as pd
-import openai
 
-# Function to initialize OpenAI API key
-def init_openai():
-    openai.api_key = "sk-proj-bvQPXeZci5ho6xHm13HaT3BlbkFJB9wxNeE3Sqxj0XmLHtOB"
-
-# Function to process the uploaded file and display the data
-def process_file(uploaded_file):
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        st.write(df)
-        return df
-    return None
-
-# Function to generate a response from OpenAI
-def generate_response(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-4",  # You can also use "gpt-3.5-turbo" if you don't have access to GPT-4
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return response.choices[0].message['content'].strip()
-
-# Streamlit App
-st.title("Data Analysis Chat Interface")
-
-# Initialize OpenAI API key
-init_openai()
-
-# File Upload
-uploaded_file = st.file_uploader("Upload your data file", type=["csv"])
-df = process_file(uploaded_file)
-
-# Chat Interface
-if df is not None:
-    user_input = st.text_input("Ask a question about your data")
-    if st.button("Submit"):
-        if user_input:
-            with st.spinner('Generating response...'):
-                response = generate_response(user_input)
-                st.write(response)
-
-                
-                
-                
 
