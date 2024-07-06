@@ -21,8 +21,8 @@ def process_file(uploaded_file):
 
 # Function to generate a response from OpenAI
 def generate_response(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-4",  # Use the appropriate model
+    response = openai.Completion.create(
+        model="gpt-4",  # Use the appropriate model, or "text-davinci-003" for Davinci model
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
