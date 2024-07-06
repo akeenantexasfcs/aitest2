@@ -18,9 +18,8 @@ def process_file(uploaded_file):
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         st.write(df)
-        label_counts = df['Label'].value_counts().to_string()
-        return df, label_counts
-    return None, None
+        return df
+    return None
 
 # Function to generate a response from Claude with retry mechanism
 def generate_response(prompt, max_retries=5):
@@ -50,7 +49,11 @@ st.title("Data Analysis Chat Interface")
 
 # File Upload
 uploaded_file = st.file_uploader("Upload your data file", type=["csv"])
-df, label_counts = process_file(uploaded_file)
+df = process_file(uploaded_file)
+
+# Store the table data globally
+if df is not None:
+    table_data = df.to_dict(orient='records')
 
 # Chat Interface
 if df is not None:
@@ -58,8 +61,16 @@ if df is not None:
     if st.button("Submit"):
         if user_input:
             with st.spinner('Generating response...'):
-                # Include the label counts in the prompt
-                full_prompt = f"Here are the counts of records by Label:\n{label_counts}\n\nUser question: {user_input}"
+                # Convert the table data to a string format to include in the prompt
+                table_data_str = '\n'.join([f"{record['Label']} - {record['Account']}" for record in table_data])
+                
+                # Include a note in the prompt that the table data should be referenced
+                full_prompt = (
+                    f"Refer to the following table data while generating the response:\n"
+                    f"{table_data_str}\n\n"
+                    f"{user_input}"
+                )
+                
                 response = generate_response(full_prompt)
                 st.write(response)
 
