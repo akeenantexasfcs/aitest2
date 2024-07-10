@@ -27,13 +27,13 @@ except KeyError:
 # Function to generate a response from OpenAI
 def generate_response(prompt):
     try:
-        response = openai.Completion.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4o",
-            prompt=prompt,
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=1000,
             temperature=0.2
         )
-        return response.choices[0].text.strip()
+        return response.choices[0].message['content'].strip()
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return "I'm sorry, but I encountered an error while processing your request."
