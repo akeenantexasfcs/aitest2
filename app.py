@@ -13,13 +13,13 @@ from openpyxl import load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from Levenshtein import distance as levenshtein_distance
 import re
-import openai
+from openai import OpenAI
 import random
 import time
 
 # Set up the OpenAI client with error handling
 try:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 except KeyError:
     st.error("OpenAI API key not found in secrets. Please check your configuration.")
     st.stop()
@@ -27,13 +27,13 @@ except KeyError:
 # Function to generate a response from OpenAI
 def generate_response(prompt):
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
+        response = client.chat.completions.create(
+            model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1000,
             temperature=0.2
         )
-        return response.choices[0].message['content'].strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
         return "I'm sorry, but I encountered an error while processing your request."
@@ -50,6 +50,7 @@ def get_ai_suggested_mapping(label, account, balance_sheet_lookup_df):
     What is the most appropriate Mnemonic mapping for this account based on Label and Account combination? Please provide only the value from the 'Mnemonic' column in the Balance Sheet Data Dictionary data frame based on Label and Account combination, without any explanation. The determination should be based on business logic first then similarity. Ensure that the suggested Mnemonic is appropriate for the given Label e.g., don't suggest a Current Asset Mnemonic for a current liability Label."""
 
     suggested_mnemonic = generate_response(prompt).strip()
+
 
     # Check if the suggested_mnemonic is in the Mnemonic column
     if suggested_mnemonic in balance_sheet_lookup_df['Mnemonic'].values:
