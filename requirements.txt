@@ -1,8 +1,3 @@
 streamlit
-pandas
-python-Levenshtein
-openpyxl
-xlsxwriter
-openai>=1.0.0
-anthropic>=0.3.0
-numpy
+boto3
+botocore
